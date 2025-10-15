@@ -1,9 +1,14 @@
 package org.iesvdm.univ;
 
+import org.iesvdm.univ.modelo.Asignatura;
+import org.iesvdm.univ.modelo.Persona;
 import org.iesvdm.univ.repositorio.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.Comparator;
+import java.util.List;
 
 /**
  1
@@ -53,6 +58,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 
  */
 
+
+
 @SpringBootTest
 class UnivApplicationTests {
 
@@ -83,5 +90,85 @@ class UnivApplicationTests {
         personaRepository.findAll().forEach(System.out::println);
 
     }
+    // Ejercicio1
+    @Test
+    void listadoAlumnosOrdenadoPorApellidosNombre() {
+        List<Persona> personas = personaRepository.findAll();
 
-}
+        personas.stream()
+                .filter(p -> p.getTipo().equalsIgnoreCase("alumno"))
+                .sorted(Comparator.comparing(Persona::getApellido1)
+                        .thenComparing(Persona::getApellido2)
+                        .thenComparing(Persona::getNombre))
+                .forEach(p -> System.out.println(
+                        "Primer Apellido: " + p.getApellido1() +
+                                ", Segundo Apellido: " + p.getApellido2() +
+                                ", Nombre: " + p.getNombre()));
+    }
+    // Ejercicio2
+    @Test
+    void alumnosSinTelefono() {
+        List<Persona> personas = personaRepository.findAll();
+
+        personas.stream()
+                .filter(p -> p.getTipo().equalsIgnoreCase("alumno"))
+                .filter(p -> p.getTelefono() == null || p.getTelefono().isBlank())
+                .forEach(p -> System.out.println(
+                        "Nombre: " + p.getNombre() +
+                                ", Apellido1: " + p.getApellido1() +
+                                ", Apellido2: " + p.getApellido2()));
+    }
+
+    //Ejercio3
+    @Test
+    void alumnosNacidosEn1999() {
+        List<Persona> personas = personaRepository.findAll();
+        personas.stream()
+                .filter(p -> p.getTipo().equalsIgnoreCase("alumno"))
+                .filter(p -> p.getFechaNacimiento() != null && p.getFechaNacimiento().getYear() == 1999)
+                .forEach(p -> System.out.println(
+                        "Nombre: " + p.getNombre() +
+                                ", Apellido1: " + p.getApellido1() +
+                                ", Apellido2: " + p.getApellido2() +
+                                ", Fecha de Nacimiento: " + p.getFechaNacimiento()));
+
+    }
+    //Ejercicio 4
+    //Devuelve el listado de profesores que no han dado de alta su número de teléfono en la base de datos y además su nif termina en K.
+
+    @Test
+    void profesoresSinTelefonoYNifTerminaEnK() {
+        List<Persona> personas = personaRepository.findAll();
+        personas.stream()
+                .filter(p -> p.getTipo().equalsIgnoreCase("profesor"))
+                .filter(p -> (p.getTelefono() == null || p.getTelefono().isBlank()) && p.getNif() != null && p.getNif().endsWith("K"))
+                .forEach(p -> System.out.println(
+                        "Nombre: " + p.getNombre() +
+                                ", Apellido1: " + p.getApellido1() +
+                                ", Apellido2: " + p.getApellido2() +
+                                ", NIF: " + p.getNif()));
+    }
+
+    //Ejercicio 5
+    //Devuelve el listado de las asignaturas que se imparten en el primer cuatrimestre, en el tercer curso del grado que tiene el identificador 7.
+    @Test
+    void asignaturasPrimerCuatrimestreTercerCursoGrado7() {
+        List<Asignatura> asignaturas = asignaturaRepository.findAll();
+        asignaturas.stream()
+                .filter(a -> a.getCuatrimestre() == 1
+                        && a.getCurso() == 3
+                        && a.getIdGrado() != null
+                        && a.getIdGrado().getId() == 7)
+                .forEach(a -> System.out.println(
+                        "Nombre Asignatura: " + a.getNombre() +
+                                ", Cuatrimestre: " + a.getCuatrimestre() +
+                                ", Curso: " + a.getCurso() +
+                                ", Grado ID: " + (a.getIdGrado() != null ? a.getIdGrado().getId() : "N/A")
+                ));
+
+    }
+
+
+
+
+    }
