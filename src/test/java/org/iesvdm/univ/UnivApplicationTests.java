@@ -245,6 +245,21 @@ class UnivApplicationTests {
                                 + p.getApellido1() + (p.getApellido2() != null ? (" " + p.getApellido2()) : "")
                                 + " (NIF: " + p.getNif() + ")"));
     }
+    
+    //Ejercicio 10
+    // Devuelve un listado con las asignaturas que no tienen un profesor asignado.
+    @Test
+    void asignaturaSinProfesor() {
+        asignaturaRepository.findAll().stream()
+                .filter(a -> a.getIdProfesor() == null)
+                .sorted(Comparator.comparing(Asignatura::getNombre))
+                .forEach(a -> System.out.println(
+                        "Asignatura sin profesor: " + a.getNombre() +
+                                ", Créditos: " + a.getCreditos() +
+                                ", Curso: " + a.getCurso() +
+                                ", Cuatrimestre: " + a.getCuatrimestre()));
+    }
+
 
 
 }
