@@ -6,6 +6,7 @@ import org.iesvdm.univ.repositorio.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.support.ResourceTransactionManager;
 
 import java.util.Comparator;
 import java.util.List;
@@ -83,6 +84,7 @@ class UnivApplicationTests {
 
     @Autowired
     ProfesorRepository profesorRepository;
+    private ResourceTransactionManager resourceTransactionManager;
 
     @Test
     void contextLoads() {
@@ -167,8 +169,63 @@ class UnivApplicationTests {
                 ));
 
     }
-
-
-
-
+    //Ejercicio6
+    @Test
+    void asignaturasYCursoEscolarDeAlumnoPorNif() {
+        String nifObjetivo = "26902806M";
+        Persona alumno = personaRepository.findAll().stream()
+                .filter(p -> "alumno".equalsIgnoreCase(p.getTipo()))
+                .filter(p -> nifObjetivo.equalsIgnoreCase(p.getNif()))
+                .findFirst()
+                .orElse(null);
+        if (alumno == null) {
+            System.out.println("Alumno no encontrado para NIF: " + nifObjetivo);
+            return;
+        }
+        alumnoSeMatriculaAsignaturaRepository.findAll().stream()
+                .filter(m -> m.getIdAlumno() != null && m.getIdAlumno().getId().equals(alumno.getId()))
+                .forEach(m -> {
+                    String nombreAsig = m.getIdAsignatura() != null ? m.getIdAsignatura().getNombre() : "N/A";
+                    Integer anyoInicio = m.getIdCursoEscolar() != null ? m.getIdCursoEscolar().getAnyoInicio() : null;
+                    Integer anyoFin = m.getIdCursoEscolar() != null ? m.getIdCursoEscolar().getAnyoFin() : null;
+                    System.out.println("Asignatura: " + nombreAsig + ", Año inicio: " + anyoInicio + ", Año fin: " + anyoFin);
+                });
     }
+    
+    //Ejercicio7
+    // Devuelve un listado con el nombre de todos los departamentos que tienen profesores que imparten alguna asignatura en el Grado en Ingeniería Informática (Plan 2015).
+    @Test
+    void nombreDepartamentosConProfesores(){
+        String nombreGradoObjetivo = "Grado en Ingeniería Informática (Plan 2015)";
+        asignaturaRepository.findAll().stream()
+                .filter(a -> a.getIdGrado() != null && nombreGradoObjetivo.equalsIgnoreCase(a.getIdGrado().getNombre()))
+                .filter(a -> a.getIdProfesor() != null && a.getIdProfesor().getIdDepartamento() != null)
+                .map(a -> a.getIdProfesor().getIdDepartamento().getNombre())
+                .distinct()
+                .sorted()
+                .forEach(nombreDepto -> System.out.println("Departamento: " + nombreDepto));
+    }
+    
+    //Ejercicio 8
+    // Devuelve un listado con todos los alumnos que se han matriculado en alguna asignatura durante el curso escolar 2018/2019.
+    @Test
+    void alumnosMatriculadosCurso2018_2019() {
+        int anyoInicioObjetivo = 2018;
+        int anyoFinObjetivo = 2019;
+
+        alumnoSeMatriculaAsignaturaRepository.findAll().stream()
+                .filter(m -> m.getIdCursoEscolar() != null
+                        && m.getIdCursoEscolar().getAnyoInicio() != null
+                        && m.getIdCursoEscolar().getAnyoFin() != null
+                        && m.getIdCursoEscolar().getAnyoInicio() == anyoInicioObjetivo
+                        && m.getIdCursoEscolar().getAnyoFin() == anyoFinObjetivo)
+                .map(m -> m.getIdAlumno())
+                .filter(a -> a != null && "alumno".equalsIgnoreCase(a.getTipo()))
+                .distinct()
+                .sorted(Comparator.comparing(Persona::getApellido1)
+                        .thenComparing(Persona::getApellido2)
+                        .thenComparing(Persona::getNombre))
+                .forEach(a -> System.out.println("Alumno: " + a.getNombre() + " " + a.getApellido1() + (a.getApellido2() != null ? (" " + a.getApellido2()) : "")));
+    }
+
+}
