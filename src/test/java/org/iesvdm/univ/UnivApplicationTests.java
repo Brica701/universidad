@@ -1,5 +1,6 @@
 package org.iesvdm.univ;
 
+import jakarta.transaction.Transactional;
 import org.iesvdm.univ.modelo.Asignatura;
 import org.iesvdm.univ.modelo.Persona;
 import org.iesvdm.univ.modelo.Profesor;
@@ -261,18 +262,38 @@ class UnivApplicationTests {
     }
 
     //Ejercicio 11
-    // Devuelve un listado con todos los departamentos que tienen alguna asignatura que no se haya impartido en ningún curso escolar.
-    // El resultado debe mostrar el nombre del departamento y el nombre de la asignatura que no se haya impartido nunca.
+    // Devuelve un listado con todos los departamentos que tienen alguna asignatura que no se haya impartido en ningún curso escolar. El resultado debe mostrar el nombre del departamento y el nombre de la asignatura que no se haya impartido nunca.
     @Test
-    void ejercicio11() {
+    void departamentosConAsignaturasNoImpartidas() {
+        // Obtener todas las asignaturas que tienen matrículas
+        var asignaturasConMatriculas = alumnoSeMatriculaAsignaturaRepository.findAll().stream()
+                .map(m -> m.getIdAsignatura().getId())
+                .collect(java.util.stream.Collectors.toSet());
+    
+        // Filtrar asignaturas que NO están en ese set
         asignaturaRepository.findAll().stream()
                 .filter(a -> a.getIdProfesor() != null
                         && a.getIdProfesor().getIdDepartamento() != null
-                        && (a.getAlumnoSeMatriculaAsignaturas() == null
-                        || a.getAlumnoSeMatriculaAsignaturas().isEmpty()))
+                        && !asignaturasConMatriculas.contains(a.getId()))
                 .forEach(a -> System.out.println(
                         "Departamento: " + a.getIdProfesor().getIdDepartamento().getNombre() +
-                                ", Asignatura sin impartir: " + a.getNombre()));
+                                ", Asignatura: " + a.getNombre()));
+    }
+    
+    //Ejercicio 12
+    // Calcula cuántos profesores hay en cada departamento. El resultado sólo debe mostrar dos columnas, una con el nombre del departamento y otra con el número de profesores que hay en ese departamento. El resultado sólo debe incluir los departamentos que tienen profesores asociados y deberá estar ordenado de mayor a menor por el número de profesores.
+    @Test
+    void profesoresPorDepartamento() {
+        profesorRepository.findAll().stream()
+                .filter(p -> p.getIdDepartamento() != null)
+                .collect(java.util.stream.Collectors.groupingBy(
+                        p -> p.getIdDepartamento().getNombre(),
+                        java.util.stream.Collectors.counting()))
+                .entrySet().stream()
+                .sorted(java.util.Map.Entry.<String, Long>comparingByValue().reversed())
+                .forEach(entry -> System.out.println(
+                        "Departamento: " + entry.getKey() +
+                                ", Número de profesores: " + entry.getValue()));
     }
 
 
