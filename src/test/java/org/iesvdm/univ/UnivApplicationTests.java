@@ -2,6 +2,7 @@ package org.iesvdm.univ;
 
 import org.iesvdm.univ.modelo.Asignatura;
 import org.iesvdm.univ.modelo.Persona;
+import org.iesvdm.univ.modelo.Profesor;
 import org.iesvdm.univ.repositorio.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -227,5 +228,23 @@ class UnivApplicationTests {
                         .thenComparing(Persona::getNombre))
                 .forEach(a -> System.out.println("Alumno: " + a.getNombre() + " " + a.getApellido1() + (a.getApellido2() != null ? (" " + a.getApellido2()) : "")));
     }
+
+    //Ejercicio 9
+    // Devuelve un listado con los profesores que no imparten ninguna asignatura.
+    @Test
+    void profesoresNoImpartenAsignatura() {
+        profesorRepository.findAll().stream()
+                .filter(pr -> pr.getAsignaturas() == null || pr.getAsignaturas().isEmpty())
+                .map(Profesor::getPersona)
+                .filter(p -> p != null && "profesor".equalsIgnoreCase(p.getTipo()))
+                .sorted(Comparator.comparing(Persona::getApellido1)
+                        .thenComparing(p -> p.getApellido2() == null ? "" : p.getApellido2())
+                        .thenComparing(Persona::getNombre))
+                .forEach(p -> System.out.println(
+                        "Profesor sin asignaturas: " + p.getNombre() + " "
+                                + p.getApellido1() + (p.getApellido2() != null ? (" " + p.getApellido2()) : "")
+                                + " (NIF: " + p.getNif() + ")"));
+    }
+
 
 }
