@@ -94,6 +94,7 @@ class UnivApplicationTests {
         personaRepository.findAll().forEach(System.out::println);
 
     }
+
     // Ejercicio1
     @Test
     void listadoAlumnosOrdenadoPorApellidosNombre() {
@@ -109,6 +110,7 @@ class UnivApplicationTests {
                                 ", Segundo Apellido: " + p.getApellido2() +
                                 ", Nombre: " + p.getNombre()));
     }
+
     // Ejercicio2
     @Test
     void alumnosSinTelefono() {
@@ -171,6 +173,7 @@ class UnivApplicationTests {
                 ));
 
     }
+
     //Ejercicio6
     @Test
     void asignaturasYCursoEscolarDeAlumnoPorNif() {
@@ -193,11 +196,11 @@ class UnivApplicationTests {
                     System.out.println("Asignatura: " + nombreAsig + ", Año inicio: " + anyoInicio + ", Año fin: " + anyoFin);
                 });
     }
-    
+
     //Ejercicio7
     // Devuelve un listado con el nombre de todos los departamentos que tienen profesores que imparten alguna asignatura en el Grado en Ingeniería Informática (Plan 2015).
     @Test
-    void nombreDepartamentosConProfesores(){
+    void nombreDepartamentosConProfesores() {
         String nombreGradoObjetivo = "Grado en Ingeniería Informática (Plan 2015)";
         asignaturaRepository.findAll().stream()
                 .filter(a -> a.getIdGrado() != null && nombreGradoObjetivo.equalsIgnoreCase(a.getIdGrado().getNombre()))
@@ -207,7 +210,7 @@ class UnivApplicationTests {
                 .sorted()
                 .forEach(nombreDepto -> System.out.println("Departamento: " + nombreDepto));
     }
-    
+
     //Ejercicio 8
     // Devuelve un listado con todos los alumnos que se han matriculado en alguna asignatura durante el curso escolar 2018/2019.
     @Test
@@ -246,7 +249,7 @@ class UnivApplicationTests {
                                 + p.getApellido1() + (p.getApellido2() != null ? (" " + p.getApellido2()) : "")
                                 + " (NIF: " + p.getNif() + ")"));
     }
-    
+
     //Ejercicio 10
     // Devuelve un listado con las asignaturas que no tienen un profesor asignado.
     @Test
@@ -269,7 +272,7 @@ class UnivApplicationTests {
         var asignaturasConMatriculas = alumnoSeMatriculaAsignaturaRepository.findAll().stream()
                 .map(m -> m.getIdAsignatura().getId())
                 .collect(java.util.stream.Collectors.toSet());
-    
+
         // Filtrar asignaturas que NO están en ese set
         asignaturaRepository.findAll().stream()
                 .filter(a -> a.getIdProfesor() != null
@@ -279,7 +282,7 @@ class UnivApplicationTests {
                         "Departamento: " + a.getIdProfesor().getIdDepartamento().getNombre() +
                                 ", Asignatura: " + a.getNombre()));
     }
-    
+
     //Ejercicio 12
     // Calcula cuántos profesores hay en cada departamento. El resultado sólo debe mostrar dos columnas, una con el nombre del departamento y otra con el número de profesores que hay en ese departamento. El resultado sólo debe incluir los departamentos que tienen profesores asociados y deberá estar ordenado de mayor a menor por el número de profesores.
     @Test
@@ -295,6 +298,22 @@ class UnivApplicationTests {
                         "Departamento: " + entry.getKey() +
                                 ", Número de profesores: " + entry.getValue()));
     }
+
+    //Ejercicio 13
+    // Devuelve un listado con el nombre de todos los grados existentes en la base de datos
+    // y el número de asignaturas que tiene cada uno, de los grados que tengan más de 40 asignaturas asociadas
+
+    @Test
+    void listadoGradosConMasDe40Asignaturas() {
+        gradoRepository.findAll().stream()
+                .filter(g -> g.getAsignaturas() != null && g.getAsignaturas().size() > 40)
+                .sorted(Comparator.comparing(g -> g.getAsignaturas().size(), Comparator.reverseOrder()))
+                .forEach(g -> System.out.println(
+                        "Grado: " + g.getNombre() +
+                                ", Número de asignaturas: " + g.getAsignaturas().size()));
+    }
+
+
 
 
 }
