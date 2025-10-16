@@ -260,6 +260,20 @@ class UnivApplicationTests {
                                 ", Cuatrimestre: " + a.getCuatrimestre()));
     }
 
+    //Ejercicio 11
+    // Devuelve un listado con todos los departamentos que tienen alguna asignatura que no se haya impartido en ningún curso escolar.
+    // El resultado debe mostrar el nombre del departamento y el nombre de la asignatura que no se haya impartido nunca.
+    @Test
+    void ejercicio11() {
+        asignaturaRepository.findAll().stream()
+                .filter(a -> a.getIdProfesor() != null
+                        && a.getIdProfesor().getIdDepartamento() != null
+                        && (a.getAlumnoSeMatriculaAsignaturas() == null
+                        || a.getAlumnoSeMatriculaAsignaturas().isEmpty()))
+                .forEach(a -> System.out.println(
+                        "Departamento: " + a.getIdProfesor().getIdDepartamento().getNombre() +
+                                ", Asignatura sin impartir: " + a.getNombre()));
+    }
 
 
 }
