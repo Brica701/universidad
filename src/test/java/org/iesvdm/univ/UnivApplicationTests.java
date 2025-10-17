@@ -53,10 +53,10 @@ import java.util.List;
  13
  Devuelve un listado con el nombre de todos los grados existentes en la base de datos y el número de asignaturas que tiene cada uno, de los grados que tengan más de 40 asignaturas asociadas
 
- 15
+ 14
  Devuelve un listado con los profesores que tienen un departamento asociado y que no imparten ninguna asignatura.
 
- 16
+ 15
  Devuelve un listado con las asignaturas que no tienen un profesor asignado.
 
  */
@@ -267,20 +267,15 @@ class UnivApplicationTests {
     //Ejercicio 11
     // Devuelve un listado con todos los departamentos que tienen alguna asignatura que no se haya impartido en ningún curso escolar. El resultado debe mostrar el nombre del departamento y el nombre de la asignatura que no se haya impartido nunca.
     @Test
-    void departamentosConAsignaturasNoImpartidas() {
-        // Obtener todas las asignaturas que tienen matrículas
-        var asignaturasConMatriculas = alumnoSeMatriculaAsignaturaRepository.findAll().stream()
-                .map(m -> m.getIdAsignatura().getId())
-                .collect(java.util.stream.Collectors.toSet());
-
-        // Filtrar asignaturas que NO están en ese set
+    void departamentosSinAsignaturas() {
         asignaturaRepository.findAll().stream()
-                .filter(a -> a.getIdProfesor() != null
-                        && a.getIdProfesor().getIdDepartamento() != null
-                        && !asignaturasConMatriculas.contains(a.getId()))
+                .filter(a -> a.getIdProfesor() == null)
+                .sorted(Comparator.comparing(Asignatura::getNombre))
                 .forEach(a -> System.out.println(
-                        "Departamento: " + a.getIdProfesor().getIdDepartamento().getNombre() +
-                                ", Asignatura: " + a.getNombre()));
+                        "Asignatura sin profesor: " + a.getNombre() +
+                                ", Créditos: " + a.getCreditos() +
+                                ", Curso: " + a.getCurso() +
+                                ", Cuatrimestre: " + a.getCuatrimestre()));
     }
 
     //Ejercicio 12
@@ -313,7 +308,24 @@ class UnivApplicationTests {
                                 ", Número de asignaturas: " + g.getAsignaturas().size()));
     }
 
-
-
+    //Ejercicio 14
+    // Devuelve un listado con los profesores que tienen un departamento asociado y que no imparten ninguna asignatura.
+    @Test
+    void listadoProfesoresSinAsignaturas() {
+        profesorRepository.findAll().stream()
+                .filter(p -> p.getIdDepartamento() != null && p.getAsignaturas() == null || p.getAsignaturas().isEmpty())
+                .forEach(p -> System.out.println(
+                        "Profesor: " + p.getPersona() +
+                                ", Departamento: " + p.getIdDepartamento().getNombre()));
+    }
+    //Ejercicio 15
+    // Devuelve un listado con las asignaturas que no tienen un profesor asignado.
+    @Test
+    void listadoAsignaturasSinProfesor() {
+        asignaturaRepository.findAll().stream()
+                .filter(a -> a.getIdProfesor() == null)
+                .forEach(a -> System.out.println(
+                        "Asignatura: " + a.getNombre()));
+    }
 
 }
