@@ -98,13 +98,17 @@ class UnivApplicationTests {
     // Ejercicio1
     @Test
     void listadoAlumnosOrdenadoPorApellidosNombre() {
+        // Obtenemos todas las personas de la base de datos
         List<Persona> personas = personaRepository.findAll();
 
         personas.stream()
+                // Filtramos solo los alumnos
                 .filter(p -> p.getTipo().equalsIgnoreCase("alumno"))
+                // Ordenamos primero por el primer apellido, luego por el segundo y finalmente por el nombre
                 .sorted(Comparator.comparing(Persona::getApellido1)
                         .thenComparing(Persona::getApellido2)
                         .thenComparing(Persona::getNombre))
+                // Imprimimos el resultado por cada alumno
                 .forEach(p -> System.out.println(
                         "Primer Apellido: " + p.getApellido1() +
                                 ", Segundo Apellido: " + p.getApellido2() +
@@ -117,8 +121,11 @@ class UnivApplicationTests {
         List<Persona> personas = personaRepository.findAll();
 
         personas.stream()
+                // Filtramos solo alumnos
                 .filter(p -> p.getTipo().equalsIgnoreCase("alumno"))
+                // Filtramos aquellos alumnos que no tienen teléfono o está vacío
                 .filter(p -> p.getTelefono() == null || p.getTelefono().isBlank())
+                // Imprimimos los alumnos sin teléfono
                 .forEach(p -> System.out.println(
                         "Nombre: " + p.getNombre() +
                                 ", Apellido1: " + p.getApellido1() +
@@ -131,13 +138,14 @@ class UnivApplicationTests {
         List<Persona> personas = personaRepository.findAll();
         personas.stream()
                 .filter(p -> p.getTipo().equalsIgnoreCase("alumno"))
+                // Filtramos los alumnos cuya fecha de nacimiento no es nula y son del año 1999
                 .filter(p -> p.getFechaNacimiento() != null && p.getFechaNacimiento().getYear() == 1999)
+                // Imprimimos los datos del alumno
                 .forEach(p -> System.out.println(
                         "Nombre: " + p.getNombre() +
                                 ", Apellido1: " + p.getApellido1() +
                                 ", Apellido2: " + p.getApellido2() +
                                 ", Fecha de Nacimiento: " + p.getFechaNacimiento()));
-
     }
     //Ejercicio 4
     //Devuelve el listado de profesores que no han dado de alta su número de teléfono en la base de datos y además su nif termina en K.
@@ -146,8 +154,11 @@ class UnivApplicationTests {
     void profesoresSinTelefonoYNifTerminaEnK() {
         List<Persona> personas = personaRepository.findAll();
         personas.stream()
+                // Filtramos solo los profesores
                 .filter(p -> p.getTipo().equalsIgnoreCase("profesor"))
+                // Filtramos profesores sin teléfono y cuyo NIF termina en 'K'
                 .filter(p -> (p.getTelefono() == null || p.getTelefono().isBlank()) && p.getNif() != null && p.getNif().endsWith("K"))
+                // Imprimimos los profesores que cumplen la condición
                 .forEach(p -> System.out.println(
                         "Nombre: " + p.getNombre() +
                                 ", Apellido1: " + p.getApellido1() +
@@ -161,10 +172,12 @@ class UnivApplicationTests {
     void asignaturasPrimerCuatrimestreTercerCursoGrado7() {
         List<Asignatura> asignaturas = asignaturaRepository.findAll();
         asignaturas.stream()
+                // Filtramos asignaturas del primer cuatrimestre, tercer curso y grado con ID 7
                 .filter(a -> a.getCuatrimestre() == 1
                         && a.getCurso() == 3
                         && a.getIdGrado() != null
                         && a.getIdGrado().getId() == 7)
+                // Imprimimos la información de cada asignatura filtrada
                 .forEach(a -> System.out.println(
                         "Nombre Asignatura: " + a.getNombre() +
                                 ", Cuatrimestre: " + a.getCuatrimestre() +
@@ -177,16 +190,22 @@ class UnivApplicationTests {
     //Ejercicio6
     @Test
     void asignaturasYCursoEscolarDeAlumnoPorNif() {
+        // NIF del alumno que buscamos
         String nifObjetivo = "26902806M";
+
+        // Buscamos al alumno por NIF
         Persona alumno = personaRepository.findAll().stream()
                 .filter(p -> "alumno".equalsIgnoreCase(p.getTipo()))
                 .filter(p -> nifObjetivo.equalsIgnoreCase(p.getNif()))
                 .findFirst()
                 .orElse(null);
+
         if (alumno == null) {
             System.out.println("Alumno no encontrado para NIF: " + nifObjetivo);
             return;
         }
+
+        // Listamos las asignaturas en las que el alumno está matriculado
         alumnoSeMatriculaAsignaturaRepository.findAll().stream()
                 .filter(m -> m.getIdAlumno() != null && m.getIdAlumno().getId().equals(alumno.getId()))
                 .forEach(m -> {
@@ -202,12 +221,16 @@ class UnivApplicationTests {
     @Test
     void nombreDepartamentosConProfesores() {
         String nombreGradoObjetivo = "Grado en Ingeniería Informática (Plan 2015)";
+
         asignaturaRepository.findAll().stream()
+                // Filtramos asignaturas que pertenecen al grado objetivo
                 .filter(a -> a.getIdGrado() != null && nombreGradoObjetivo.equalsIgnoreCase(a.getIdGrado().getNombre()))
+                // Nos aseguramos de que la asignatura tenga profesor y departamento
                 .filter(a -> a.getIdProfesor() != null && a.getIdProfesor().getIdDepartamento() != null)
+                // Obtenemos el nombre del departamento
                 .map(a -> a.getIdProfesor().getIdDepartamento().getNombre())
-                .distinct()
-                .sorted()
+                .distinct() // Eliminamos duplicados
+                .sorted()   // Ordenamos alfabéticamente
                 .forEach(nombreDepto -> System.out.println("Departamento: " + nombreDepto));
     }
 
@@ -219,17 +242,20 @@ class UnivApplicationTests {
         int anyoFinObjetivo = 2019;
 
         alumnoSeMatriculaAsignaturaRepository.findAll().stream()
+                // Filtramos matrículas del curso escolar 2018/2019
                 .filter(m -> m.getIdCursoEscolar() != null
                         && m.getIdCursoEscolar().getAnyoInicio() != null
                         && m.getIdCursoEscolar().getAnyoFin() != null
                         && m.getIdCursoEscolar().getAnyoInicio() == anyoInicioObjetivo
                         && m.getIdCursoEscolar().getAnyoFin() == anyoFinObjetivo)
+                // Obtenemos los alumnos
                 .map(m -> m.getIdAlumno())
                 .filter(a -> a != null && "alumno".equalsIgnoreCase(a.getTipo()))
-                .distinct()
+                .distinct() // Eliminamos duplicados
                 .sorted(Comparator.comparing(Persona::getApellido1)
                         .thenComparing(Persona::getApellido2)
                         .thenComparing(Persona::getNombre))
+                // Imprimimos los alumnos
                 .forEach(a -> System.out.println("Alumno: " + a.getNombre() + " " + a.getApellido1() + (a.getApellido2() != null ? (" " + a.getApellido2()) : "")));
     }
 
@@ -238,9 +264,11 @@ class UnivApplicationTests {
     @Test
     void profesoresNoImpartenAsignatura() {
         profesorRepository.findAll().stream()
+                // Filtramos profesores que no imparten asignatura
                 .filter(pr -> pr.getAsignaturas() == null || pr.getAsignaturas().isEmpty())
                 .map(Profesor::getPersona)
                 .filter(p -> p != null && "profesor".equalsIgnoreCase(p.getTipo()))
+                // Ordenamos por apellido1, apellido2 y nombre
                 .sorted(Comparator.comparing(Persona::getApellido1)
                         .thenComparing(p -> p.getApellido2() == null ? "" : p.getApellido2())
                         .thenComparing(Persona::getNombre))
@@ -255,8 +283,10 @@ class UnivApplicationTests {
     @Test
     void asignaturaSinProfesor() {
         asignaturaRepository.findAll().stream()
+                // Filtramos asignaturas sin profesor
                 .filter(a -> a.getIdProfesor() == null)
                 .sorted(Comparator.comparing(Asignatura::getNombre))
+                // Imprimimos información de cada asignatura
                 .forEach(a -> System.out.println(
                         "Asignatura sin profesor: " + a.getNombre() +
                                 ", Créditos: " + a.getCreditos() +
@@ -269,8 +299,10 @@ class UnivApplicationTests {
     @Test
     void departamentosSinAsignaturas() {
         asignaturaRepository.findAll().stream()
+                // Filtramos asignaturas sin profesor (no impartidas)
                 .filter(a -> a.getIdProfesor() == null)
                 .sorted(Comparator.comparing(Asignatura::getNombre))
+                // Imprimimos las asignaturas sin profesor
                 .forEach(a -> System.out.println(
                         "Asignatura sin profesor: " + a.getNombre() +
                                 ", Créditos: " + a.getCreditos() +
@@ -278,15 +310,19 @@ class UnivApplicationTests {
                                 ", Cuatrimestre: " + a.getCuatrimestre()));
     }
 
+
     //Ejercicio 12
     // Calcula cuántos profesores hay en cada departamento. El resultado sólo debe mostrar dos columnas, una con el nombre del departamento y otra con el número de profesores que hay en ese departamento. El resultado sólo debe incluir los departamentos que tienen profesores asociados y deberá estar ordenado de mayor a menor por el número de profesores.
     @Test
     void profesoresPorDepartamento() {
         profesorRepository.findAll().stream()
+                // Filtramos profesores con departamento asignado
                 .filter(p -> p.getIdDepartamento() != null)
+                // Agrupamos por nombre del departamento y contamos
                 .collect(java.util.stream.Collectors.groupingBy(
                         p -> p.getIdDepartamento().getNombre(),
                         java.util.stream.Collectors.counting()))
+                // Ordenamos de mayor a menor por número de profesores
                 .entrySet().stream()
                 .sorted(java.util.Map.Entry.<String, Long>comparingByValue().reversed())
                 .forEach(entry -> System.out.println(
@@ -301,7 +337,9 @@ class UnivApplicationTests {
     @Test
     void listadoGradosConMasDe40Asignaturas() {
         gradoRepository.findAll().stream()
+                // Filtramos grados con más de 40 asignaturas
                 .filter(g -> g.getAsignaturas() != null && g.getAsignaturas().size() > 40)
+                // Ordenamos de mayor a menor por número de asignaturas
                 .sorted(Comparator.comparing(g -> g.getAsignaturas().size(), Comparator.reverseOrder()))
                 .forEach(g -> System.out.println(
                         "Grado: " + g.getNombre() +
@@ -313,16 +351,19 @@ class UnivApplicationTests {
     @Test
     void listadoProfesoresSinAsignaturas() {
         profesorRepository.findAll().stream()
-                .filter(p -> p.getIdDepartamento() != null && p.getAsignaturas() == null || p.getAsignaturas().isEmpty())
+                // Filtramos profesores que tienen departamento y no imparten asignaturas
+                .filter(p -> p.getIdDepartamento() != null && (p.getAsignaturas() == null || p.getAsignaturas().isEmpty()))
                 .forEach(p -> System.out.println(
                         "Profesor: " + p.getPersona() +
                                 ", Departamento: " + p.getIdDepartamento().getNombre()));
     }
+
     //Ejercicio 15
     // Devuelve un listado con las asignaturas que no tienen un profesor asignado.
     @Test
     void listadoAsignaturasSinProfesor() {
         asignaturaRepository.findAll().stream()
+                // Filtramos asignaturas sin profesor
                 .filter(a -> a.getIdProfesor() == null)
                 .forEach(a -> System.out.println(
                         "Asignatura: " + a.getNombre()));
